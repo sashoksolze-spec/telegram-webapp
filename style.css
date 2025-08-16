@@ -66,6 +66,37 @@ input:focus {
     background-color: #1a6cb3;
 }
 
+.submit-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Сообщения */
+.error {
+    color: #ff4444;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.success {
+    color: #2ecc71;
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #e8f8f0;
+    display: none;
+}
+
+.calculation {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: 600;
+}
+
 /* Адаптивность */
 @media (max-width: 600px) {
     .container {
@@ -74,6 +105,7 @@ input:focus {
     }
 }
 
+/* Темная тема */
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #121212;
@@ -89,19 +121,8 @@ input:focus {
         color: #ffffff;
         border-color: #444;
     }
-}
-
-.error {
-    color: #ff4444;
-    padding: 10px;
-    margin-top: 15px;
-    border: 1px solid #ffcccc;
-    border-radius: 5px;
-    background-color: #ffeeee;
-    animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    
+    .calculation {
+        background-color: #2d2d2d;
+    }
 }
