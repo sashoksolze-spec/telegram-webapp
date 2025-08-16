@@ -73,3 +73,66 @@ function calculateSalary() {
     // Показываем результат пользователю
     console.log(`Предварительный расчет: ${total} руб.`);
 }
+
+// Проверка окружения Telegram
+function initWebApp() {
+    if (!window.Telegram?.WebApp) {
+        showError("Это приложение работает только в Telegram");
+        return false;
+    }
+    
+    window.Telegram.WebApp.expand();
+    return true;
+}
+
+// Основная функция
+document.addEventListener('DOMContentLoaded', function() {
+    if (!initWebApp()) return;
+    
+    const form = document.getElementById('workForm');
+    if (!form) {
+        console.error("Форма не найдена");
+        return;
+    }
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        try {
+            const data = {
+                hours: parseInt(document.getElementById('hours').value),
+                orders: parseInt(document.getElementById('orders').value),
+                night_orders: parseInt(document.getElementById('nightOrders').value || 0),
+                user_id: window.Telegram.WebApp.initDataUnsafe.user?.id
+            };
+            
+            if (isNaN(data.hours) || isNaN(data.orders)) {
+                throw new Error("Заполните обязательные поля");
+            }
+            
+            console.log("Отправка данных:", data);
+            window.Telegram.WebApp.sendData(JSON.stringify(data));
+            window.Telegram.WebApp.close();
+            
+        } catch (error) {
+            console.error("Ошибка:", error);
+            showError(error.message);
+        }
+    });
+});
+
+// Показ ошибок
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error';
+    errorDiv.textContent = message;
+    
+    const existingError = document.querySelector('.error');
+    if (existingError) {
+        existingError.replaceWith(errorDiv);
+    } else {
+        document.getElementById('workForm').appendChild(errorDiv);
+    }
+    
+    setTimeout(() => errorDiv.remove(), 3000);
+}
