@@ -49,7 +49,27 @@ function showError(message) {
     }, 3000);
 }
 
-// Можно добавить дополнительные функции:
-// - Загрузка предыдущих данных
-// - Расчет зарплаты в реальном времени
-// - Валидация ввода
+
+// Расчет в реальном времени
+document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', calculateSalary);
+});
+
+function calculateSalary() {
+    const config = {
+        hourRate: 500,
+        orderRate: 200,
+        nightBonus: 300
+    };
+    
+    const hours = parseInt(document.getElementById('hours').value) || 0;
+    const orders = parseInt(document.getElementById('orders').value) || 0;
+    const nightOrders = parseInt(document.getElementById('nightOrders').value) || 0;
+    
+    const total = (hours * config.hourRate) + 
+                 (orders * config.orderRate) + 
+                 (nightOrders * config.nightBonus);
+    
+    // Показываем результат пользователю
+    console.log(`Предварительный расчет: ${total} руб.`);
+}
