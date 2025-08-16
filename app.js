@@ -1,138 +1,152 @@
 // Инициализация WebApp Telegram
-const tg = window.Telegram.WebApp;
-
-// Расширяем WebApp на весь экран
-tg.expand();
-
-// Обработчик отправки формы
-document.getElementById('workForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Получаем данные формы
-    const formData = {
-        hours: parseInt(document.getElementById('hours').value),
-        orders: parseInt(document.getElementById('orders').value),
-        night_orders: parseInt(document.getElementById('nightOrders').value),
-        timestamp: new Date().toISOString()
-    };
-    
-    // Валидация данных
-    if (formData.hours <= 0 || formData.orders < 0 || formData.night_orders < 0) {
-        showError("Пожалуйста, введите корректные значения");
-        return;
-    }
-    
-    // Отправляем данные в бот
-    tg.sendData(JSON.stringify(formData));
-    
-    // Закрываем WebApp после отправки
-    tg.close();
-});
-
-// Показать ошибку
-function showError(message) {
-    const errorElement = document.createElement('div');
-    errorElement.className = 'error-message';
-    errorElement.textContent = message;
-    errorElement.style.color = 'red';
-    errorElement.style.marginTop = '10px';
-    errorElement.style.textAlign = 'center';
-    
-    const form = document.getElementById('workForm');
-    form.appendChild(errorElement);
-    
-    // Автоматическое удаление ошибки через 3 секунды
-    setTimeout(() => {
-        if (form.contains(errorElement)) {
-            form.removeChild(errorElement);
-        }
-    }, 3000);
-}
-
-
-// Расчет в реальном времени
-document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', calculateSalary);
-});
-
-function calculateSalary() {
-    const config = {
-        hourRate: 500,
-        orderRate: 200,
-        nightBonus: 300
-    };
-    
-    const hours = parseInt(document.getElementById('hours').value) || 0;
-    const orders = parseInt(document.getElementById('orders').value) || 0;
-    const nightOrders = parseInt(document.getElementById('nightOrders').value) || 0;
-    
-    const total = (hours * config.hourRate) + 
-                 (orders * config.orderRate) + 
-                 (nightOrders * config.nightBonus);
-    
-    // Показываем результат пользователю
-    console.log(`Предварительный расчет: ${total} руб.`);
-}
-
-// Проверка окружения Telegram
-function initWebApp() {
-    if (!window.Telegram?.WebApp) {
-        showError("Это приложение работает только в Telegram");
-        return false;
-    }
-    
-    window.Telegram.WebApp.expand();
-    return true;
-}
-
-// Основная функция
 document.addEventListener('DOMContentLoaded', function() {
-    if (!initWebApp()) return;
+    const form = document.getElementById('shiftForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
     
-    const form = document.getElementById('workForm');
-    if (!form) {
-        console.error("Форма не найдена");
-        return;
+    // Проверка окружения Telegram
+    const isTelegramWebApp = typeof Telegram !== 'undefined' && 
+                           typeof Telegram.WebApp !== 'undefined';
+    
+    if (isTelegramWebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        
+        // Адаптация под цветовую схему Telegram
+        document.body.style.backgroundColor = Telegram.WebApp.colorScheme === 'dark' ? '#17212b' : '#f5f5f5';
+    } else {
+        console.warn('Приложение запущено вне Telegram');
     }
     
-    form.addEventListener('submit', function(e) {
+    // Расчет зарплаты в реальном времени
+    function calculateSalary() {
+        const config = {
+            hourRate: 500,
+            orderRate: 200,
+            nightBonus: 300
+        };
+        
+        const hours = parseFloat(document.getElementById('hours').value) || 0;
+        const orders = parseInt(document.getElementById('orders').value) || 0;
+        const nightOrders = parseInt(document.getElementById('nightOrders').value) || 0;
+        
+        const total = (hours * config.hourRate) + 
+                     (orders * config.orderRate) + 
+                     (nightOrders * config.nightBonus);
+        
+        document.getElementById('calculation').textContent = `Предварительный расчет: ${total} руб.`;
+    }
+    
+    // Валидация ввода
+    function validateInputs() {
+        let isValid = true;
+        
+        // Сброс предыдущих ошибок
+        document.querySelectorAll('.error').forEach(el => el.textContent = '');
+        
+        const hours = parseFloat(form.hours.value);
+        const orders = parseInt(form.orders.value);
+        const nightOrders = parseInt(form.night_orders.value) || 0;
+        
+        // Валидация часов
+        if (isNaN(hours) || hours <= 0) {
+            document.getElementById('hoursError').textContent = 'Введите корректное количество часов';
+            isValid = false;
+        } else if (hours > 24) {
+            document.getElementById('hoursError').textContent = 'Количество часов не может превышать 24';
+            isValid = false;
+        }
+        
+        // Валидация заказов
+        if (isNaN(orders) || orders < 0) {
+            document.getElementById('ordersError').textContent = 'Введите корректное количество заказов';
+            isValid = false;
+        }
+        
+        // Валидация ночных заказов
+        if (isNaN(nightOrders) || nightOrders < 0) {
+            document.getElementById('nightOrdersError').textContent = 'Введите корректное количество ночных заказов';
+            isValid = false;
+        } else if (nightOrders > orders) {
+            document.getElementById('nightOrdersError').textContent = 'Ночных заказов не может быть больше общего количества';
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // Обработка отправки формы
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        if (!validateInputs()) return;
+        
+        const hours = parseFloat(form.hours.value);
+        const orders = parseInt(form.orders.value);
+        const nightOrders = parseInt(form.night_orders.value) || 0;
+        
+        const data = {
+            hours: hours,
+            orders: orders,
+            night_orders: nightOrders,
+            user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user?.id : null,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Блокировка кнопки на время отправки
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Отправка...";
+        
         try {
-            const data = {
-                hours: parseInt(document.getElementById('hours').value),
-                orders: parseInt(document.getElementById('orders').value),
-                night_orders: parseInt(document.getElementById('nightOrders').value || 0),
-                user_id: window.Telegram.WebApp.initDataUnsafe.user?.id
-            };
-            
-            if (isNaN(data.hours) || isNaN(data.orders)) {
-                throw new Error("Заполните обязательные поля");
+            if (isTelegramWebApp) {
+                Telegram.WebApp.sendData(JSON.stringify(data));
+            } else {
+                console.log("Данные для отправки:", data);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки
             }
             
-            console.log("Отправка данных:", data);
-            window.Telegram.WebApp.sendData(JSON.stringify(data));
-            window.Telegram.WebApp.close();
-            
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                if (isTelegramWebApp) {
+                    Telegram.WebApp.close();
+                } else {
+                    successMessage.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Отправить";
+                }
+            }, 2000);
         } catch (error) {
-            console.error("Ошибка:", error);
-            showError(error.message);
+            console.error("Ошибка отправки:", error);
+            showError("Произошла ошибка при отправке данных");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Отправить";
         }
     });
-});
-
-// Показ ошибок
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error';
-    errorDiv.textContent = message;
     
-    const existingError = document.querySelector('.error');
-    if (existingError) {
-        existingError.replaceWith(errorDiv);
-    } else {
-        document.getElementById('workForm').appendChild(errorDiv);
+    // Показать ошибку
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.textContent = message;
+        
+        const existingError = document.querySelector('.error:not(#hoursError):not(#ordersError):not(#nightOrdersError)');
+        if (existingError) {
+            existingError.replaceWith(errorDiv);
+        } else {
+            form.appendChild(errorDiv);
+        }
+        
+        setTimeout(() => errorDiv.remove(), 3000);
     }
     
-    setTimeout(() => errorDiv.remove(), 3000);
-}
+    // Слушатели изменений для расчета в реальном времени
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', calculateSalary);
+        input.addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+        });
+    });
+    
+    // Первоначальный расчет
+    calculateSalary();
+});
