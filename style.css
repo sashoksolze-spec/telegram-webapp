@@ -1,14 +1,75 @@
- body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
+/* Основные стили */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
-button {
-    padding: 10px 20px;
-    background: #0088cc;
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #2481cc;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Стили формы */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2481cc;
+    box-shadow: 0 0 0 2px rgba(36, 129, 204, 0.2);
+}
+
+/* Стили кнопки */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #2481cc;
     color: white;
     border: none;
     border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #1a6cb3;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .container {
+        margin: 10px;
+        padding: 15px;
+    }
 }
