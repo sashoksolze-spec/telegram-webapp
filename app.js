@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.backgroundColor = Telegram.WebApp.colorScheme === 'dark' ? '#17212b' : '#f5f5f5';
     } else {
         console.warn('Приложение запущено вне Telegram');
+        document.getElementById('submitBtn').textContent = "Тест: Отправить данные";
     }
     
     // Расчет зарплаты в реальном времени
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                      (nightOrders * config.nightBonus);
         
         document.getElementById('calculation').textContent = `Предварительный расчет: ${total} руб.`;
+        return total;
     }
     
     // Валидация ввода
@@ -75,54 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
-    // Обработка отправки формы
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        if (!validateInputs()) return;
-        
-        const hours = parseFloat(form.hours.value);
-        const orders = parseInt(form.orders.value);
-        const nightOrders = parseInt(form.night_orders.value) || 0;
-        
-        const data = {
-            hours: hours,
-            orders: orders,
-            night_orders: nightOrders,
-            user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user?.id : null,
-            timestamp: new Date().toISOString()
-        };
-        
-        // Блокировка кнопки на время отправки
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Отправка...";
-        
-        try {
-            if (isTelegramWebApp) {
-                Telegram.WebApp.sendData(JSON.stringify(data));
-            } else {
-                console.log("Данные для отправки:", data);
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки
-            }
-            
-            successMessage.style.display = 'block';
-            setTimeout(() => {
-                if (isTelegramWebApp) {
-                    Telegram.WebApp.close();
-                } else {
-                    successMessage.style.display = 'none';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "Отправить";
-                }
-            }, 2000);
-        } catch (error) {
-            console.error("Ошибка отправки:", error);
-            showError("Произошла ошибка при отправке данных");
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Отправить";
-        }
-    });
-    
     // Показать ошибку
     function showError(message) {
         const errorDiv = document.createElement('div');
@@ -138,6 +92,65 @@ document.addEventListener('DOMContentLoaded', function() {
         
         setTimeout(() => errorDiv.remove(), 3000);
     }
+    
+    // Обработка отправки формы
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateInputs()) return;
+        
+        const hours = parseFloat(form.hours.value);
+        const orders = parseInt(form.orders.value);
+        const nightOrders = parseInt(form.night_orders.value) || 0;
+        const calculation = calculateSalary();
+        
+        const data = {
+            hours: hours,
+            orders: orders,
+            night_orders: nightOrders,
+            calculation: calculation,
+            user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user?.id : null,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Блокировка кнопки на время отправки
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Отправка...";
+        
+        try {
+            if (isTelegramWebApp) {
+                // Отправка данных в Telegram бота
+                Telegram.WebApp.sendData(JSON.stringify(data));
+                successMessage.style.display = 'block';
+                
+                // Закрытие WebApp через 1.5 секунды
+                setTimeout(() => Telegram.WebApp.close(), 1500);
+            } else {
+                // Режим тестирования вне Telegram
+                console.log("Данные для отправки:", data);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация задержки
+                
+                // Сохранение в localStorage для демонстрации
+                const history = JSON.parse(localStorage.getItem('shiftHistory') || []);
+                history.unshift(data);
+                localStorage.setItem('shiftHistory', JSON.stringify(history.slice(0, 10)));
+                
+                successMessage.style.display = 'block';
+                successMessage.textContent = "Тест: Данные сохранены в localStorage";
+                
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Отправить";
+                }, 2000);
+            }
+        } catch (error) {
+            console.error("Ошибка отправки:", error);
+            showError("Произошла ошибка при отправке данных");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Отправить";
+        }
+    });
     
     // Слушатели изменений для расчета в реальном времени
     document.querySelectorAll('input').forEach(input => {
