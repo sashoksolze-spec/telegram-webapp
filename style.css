@@ -90,3 +90,18 @@ input:focus {
         border-color: #444;
     }
 }
+
+.error {
+    color: #ff4444;
+    padding: 10px;
+    margin-top: 15px;
+    border: 1px solid #ffcccc;
+    border-radius: 5px;
+    background-color: #ffeeee;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
