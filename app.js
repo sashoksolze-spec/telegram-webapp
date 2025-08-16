@@ -163,3 +163,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Первоначальный расчет
     calculateSalary();
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('shiftForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Проверка запуска в Telegram
+    const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+    
+    if (isTelegramWebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const data = {
+            hours: parseFloat(form.hours.value),
+            orders: parseInt(form.orders.value),
+            night_orders: parseInt(form.night_orders.value) || 0,
+            user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user.id : null
+        };
+
+        if (isTelegramWebApp) {
+            // Важно: отправляем как строку
+            Telegram.WebApp.sendData(JSON.stringify(data));
+            
+            // Закрываем WebApp через 1 секунду
+            setTimeout(() => Telegram.WebApp.close(), 1000);
+        } else {
+            console.log("Тестовые данные:", data);
+            alert("В режиме тестирования данные не отправляются в бота");
+        }
+    });
+});
+
