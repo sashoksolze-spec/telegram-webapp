@@ -3,68 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram WebApp</title>
+    <title>Ввод данных смены</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input, button {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        button {
-            background: #2481cc;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>📊 Введите данные смены</h2>
-    <form id="dataForm">
-        <div class="form-group">
-            <label for="hours">Часы работы:</label>
-            <input type="number" id="hours" required>
-        </div>
-        <div class="form-group">
-            <label for="orders">Количество заказов:</label>
-            <input type="number" id="orders" required>
-        </div>
-        <div class="form-group">
-            <label for="nightOrders">Заказов после 23:00:</label>
-            <input type="number" id="nightOrders" value="0">
-        </div>
-        <button type="submit">Отправить</button>
-    </form>
+    <div class="container">
+        <h1>📊 Введите данные смены</h1>
+        <form id="shiftForm">
+            <div class="form-group">
+                <label for="hours">Часы работы:</label>
+                <input type="number" id="hours" name="hours" placeholder="Например: 8" required min="0" step="0.5">
+                <div id="hoursError" class="error"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="orders">Общее число заказов:</label>
+                <input type="number" id="orders" name="orders" placeholder="Например: 15" required min="0">
+                <div id="ordersError" class="error"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="nightOrders">Заказы после 23:00:</label>
+                <input type="number" id="nightOrders" name="night_orders" placeholder="Например: 3" min="0">
+                <div id="nightOrdersError" class="error"></div>
+            </div>
+            
+            <div id="calculation" class="calculation"></div>
+            
+            <button type="submit" id="submitBtn" class="submit-btn">Отправить</button>
+            <div id="successMessage" class="success">Данные успешно отправлены!</div>
+        </form>
+    </div>
 
-    <script>
-        const form = document.getElementById('dataForm');
-        
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const data = {
-                hours: parseInt(document.getElementById('hours').value),
-                orders: parseInt(document.getElementById('orders').value),
-                night_orders: parseInt(document.getElementById('nightOrders').value)
-            };
-            
-            // Отправляем данные в Telegram бот
-            Telegram.WebApp.sendData(JSON.stringify(data));
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
