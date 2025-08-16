@@ -1,123 +1,81 @@
+// Конфигурация тарифов
+const CONFIG = {
+    hourRate: 500,
+    orderRate: 200,
+    nightBonus: 300
+};
+
 // Инициализация WebApp Telegram
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('shiftForm');
     const submitBtn = document.getElementById('submitBtn');
     const successMessage = document.getElementById('successMessage');
     
-    if (!form || !submitBtn || !successMessage) {
-        console.error('Required elements not found');
-        return;
-    }
-    
     // Проверка окружения Telegram
     const isTelegramWebApp = typeof Telegram !== 'undefined' && 
                            typeof Telegram.WebApp !== 'undefined';
     
     if (isTelegramWebApp) {
-        try {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-            
-            // Адаптация под цветовую схему Telegram
-            document.body.style.backgroundColor = Telegram.WebApp.colorScheme === 'dark' ? '#17212b' : '#f5f5f5';
-        } catch (e) {
-            console.error('Telegram WebApp error:', e);
-        }
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        
+        // Адаптация под цветовую схему Telegram
+        document.body.style.backgroundColor = Telegram.WebApp.colorScheme === 'dark' ? '#17212b' : '#f5f5f5';
     } else {
         console.warn('Приложение запущено вне Telegram');
         submitBtn.textContent = "Тест: Отправить данные";
     }
     
-    // Конфигурация ставок
-    const config = {
-        hourRate: 500,
-        orderRate: 200,
-        nightBonus: 300
-    };
-    
     // Расчет зарплаты в реальном времени
     function calculateSalary() {
-        try {
-            const hours = parseFloat(document.getElementById('hours').value) || 0;
-            const orders = parseInt(document.getElementById('orders').value) || 0;
-            const nightOrders = parseInt(document.getElementById('nightOrders').value) || 0;
-            
-            const total = (hours * config.hourRate) + 
-                         (orders * config.orderRate) + 
-                         (nightOrders * config.nightBonus);
-            
-            const calculationElement = document.getElementById('calculation');
-            if (calculationElement) {
-                calculationElement.textContent = `Предварительный расчет: ${total} руб.`;
-            }
-            return total;
-        } catch (e) {
-            console.error('Calculation error:', e);
-            return 0;
-        }
+        const hours = parseFloat(document.getElementById('hours').value) || 0;
+        const orders = parseInt(document.getElementById('orders').value) || 0;
+        const nightOrders = parseInt(document.getElementById('nightOrders').value) || 0;
+        
+        const total = (hours * CONFIG.hourRate) + 
+                     (orders * CONFIG.orderRate) + 
+                     (nightOrders * CONFIG.nightBonus);
+        
+        document.getElementById('calculation').textContent = `Предварительный расчет: ${total} руб.`;
+        return total;
     }
     
     // Валидация ввода
     function validateInputs() {
-        try {
-            let isValid = true;
-            
-            // Сброс предыдущих ошибок
-            document.querySelectorAll('.error').forEach(el => el.textContent = '');
-            
-            const hours = parseFloat(form.hours.value);
-            const orders = parseInt(form.orders.value);
-            const nightOrders = parseInt(form.night_orders.value) || 0;
-            
-            // Валидация часов
-            if (isNaN(hours) || hours <= 0) {
-                document.getElementById('hoursError').textContent = 'Введите корректное количество часов';
-                isValid = false;
-            } else if (hours > 24) {
-                document.getElementById('hoursError').textContent = 'Количество часов не может превышать 24';
-                isValid = false;
-            }
-            
-            // Валидация заказов
-            if (isNaN(orders) || orders < 0) {
-                document.getElementById('ordersError').textContent = 'Введите корректное количество заказов';
-                isValid = false;
-            }
-            
-            // Валидация ночных заказов
-            if (isNaN(nightOrders) || nightOrders < 0) {
-                document.getElementById('nightOrdersError').textContent = 'Введите корректное количество ночных заказов';
-                isValid = false;
-            } else if (nightOrders > orders) {
-                document.getElementById('nightOrdersError').textContent = 'Ночных заказов не может быть больше общего количества';
-                isValid = false;
-            }
-            
-            return isValid;
-        } catch (e) {
-            console.error('Validation error:', e);
-            return false;
+        let isValid = true;
+        
+        // Сброс предыдущих ошибок
+        document.querySelectorAll('.error').forEach(el => el.textContent = '');
+        
+        const hours = parseFloat(form.hours.value);
+        const orders = parseInt(form.orders.value);
+        const nightOrders = parseInt(form.night_orders.value) || 0;
+        
+        // Валидация часов
+        if (isNaN(hours) || hours <= 0) {
+            document.getElementById('hoursError').textContent = 'Введите корректное количество часов';
+            isValid = false;
+        } else if (hours > 24) {
+            document.getElementById('hoursError').textContent = 'Количество часов не может превышать 24';
+            isValid = false;
         }
-    }
-    
-    // Показать ошибку
-    function showError(message) {
-        try {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            
-            const existingError = document.querySelector('.error:not(#hoursError):not(#ordersError):not(#nightOrdersError)');
-            if (existingError) {
-                existingError.replaceWith(errorDiv);
-            } else {
-                form.appendChild(errorDiv);
-            }
-            
-            setTimeout(() => errorDiv.remove(), 3000);
-        } catch (e) {
-            console.error('Error showing error:', e);
+        
+        // Валидация заказов
+        if (isNaN(orders) || orders < 0) {
+            document.getElementById('ordersError').textContent = 'Введите корректное количество заказов';
+            isValid = false;
         }
+        
+        // Валидация ночных заказов
+        if (isNaN(nightOrders) || nightOrders < 0) {
+            document.getElementById('nightOrdersError').textContent = 'Введите корректное количество ночных заказов';
+            isValid = false;
+        } else if (nightOrders > orders) {
+            document.getElementById('nightOrdersError').textContent = 'Ночных заказов не может быть больше общего количества';
+            isValid = false;
+        }
+        
+        return isValid;
     }
     
     // Обработка отправки формы
@@ -126,54 +84,41 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!validateInputs()) return;
         
+        const hours = parseFloat(form.hours.value);
+        const orders = parseInt(form.orders.value);
+        const nightOrders = parseInt(form.night_orders.value) || 0;
+        const calculation = calculateSalary();
+        
+        const data = {
+            hours: hours,
+            orders: orders,
+            night_orders: nightOrders,
+            calculation: calculation,
+            user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user?.id : null,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Блокировка кнопки на время отправки
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Отправка...";
+        
         try {
-            const hours = parseFloat(form.hours.value);
-            const orders = parseInt(form.orders.value);
-            const nightOrders = parseInt(form.night_orders.value) || 0;
-            const calculation = calculateSalary();
-            
-            const data = {
-                hours: hours,
-                orders: orders,
-                night_orders: nightOrders,
-                calculation: calculation,
-                user_id: isTelegramWebApp ? Telegram.WebApp.initDataUnsafe.user?.id : null,
-                timestamp: new Date().toISOString()
-            };
-            
-            // Блокировка кнопки на время отправки
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Отправка...";
-            
             if (isTelegramWebApp) {
                 // Отправка данных в Telegram бота
                 Telegram.WebApp.sendData(JSON.stringify(data));
                 successMessage.style.display = 'block';
                 
                 // Закрытие WebApp через 1.5 секунды
-                setTimeout(() => {
-                    try {
-                        Telegram.WebApp.close();
-                    } catch (e) {
-                        console.error('Error closing WebApp:', e);
-                        successMessage.style.display = 'none';
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = "Отправить";
-                    }
-                }, 1500);
+                setTimeout(() => Telegram.WebApp.close(), 1500);
             } else {
                 // Режим тестирования вне Telegram
                 console.log("Данные для отправки:", data);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 // Сохранение в localStorage для демонстрации
-                try {
-                    const history = JSON.parse(localStorage.getItem('shiftHistory') || '[]');
-                    history.unshift(data);
-                    localStorage.setItem('shiftHistory', JSON.stringify(history.slice(0, 10)));
-                } catch (e) {
-                    console.error('LocalStorage error:', e);
-                }
+                const history = JSON.parse(localStorage.getItem('shiftHistory') || '[]');
+                history.unshift(data);
+                localStorage.setItem('shiftHistory', JSON.stringify(history.slice(0, 10)));
                 
                 successMessage.style.display = 'block';
                 successMessage.textContent = "Тест: Данные сохранены в localStorage";
@@ -186,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error("Ошибка отправки:", error);
-            showError("Произошла ошибка при отправке данных");
+            alert("Произошла ошибка при отправке данных");
             submitBtn.disabled = false;
             submitBtn.textContent = "Отправить";
         }
