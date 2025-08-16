@@ -73,3 +73,20 @@ input:focus {
         padding: 15px;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+    
+    .container {
+        background-color: #1e1e1e;
+    }
+    
+    input {
+        background-color: #2d2d2d;
+        color: #ffffff;
+        border-color: #444;
+    }
+}
